@@ -1,0 +1,75 @@
+# Dependencies
+node_modules/
+
+# Production and build output
+dist/
+dist-ssr/
+build/
+out/
+.vite/
+
+# Environment files and local secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Logs and debug output
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Test and coverage output
+coverage/
+.nyc_output/
+*.lcov
+test-results/
+playwright-report/
+blob-report/
+
+# Temporary files and caches
+.cache/
+.eslintcache
+.stylelintcache
+.parcel-cache/
+.sass-cache/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Supabase local development files
+.supabase/
+
+# Editor settings
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.iml
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.code-workspace
+
+# Operating system files
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Windows thumbnail and Explorer metadata
+$RECYCLE.BIN/
+[Tt]humbs.db
+
+# Optional local tool files
+.eslintcache
+.history/
