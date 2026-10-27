@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from './supabaseClient';
+import { isSupabaseConfigured, supabase } from './supabaseClient';
 import Auth from './components/auth';
 import FeedbackForm from './components/FeedbackForm';
 import FeedbackList from './components/FeedbackList';
@@ -12,6 +12,10 @@ export default function App() {
   const [refreshToken, setRefreshToken] = useState(0);
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      return undefined;
+    }
+
     let active = true;
 
     const loadSession = async () => {
@@ -34,6 +38,30 @@ export default function App() {
       authListener.subscription.unsubscribe();
     };
   }, []);
+
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="app-container">
+        <header className="app-header">
+          <a className="brand" href="/" aria-label="Feedback Portal home">
+            <span className="brand-mark">F</span>
+            <span>Feedback Portal</span>
+          </a>
+        </header>
+        <main className="main-content">
+          <section className="panel setup-panel" role="alert">
+            <p className="eyebrow">Configuration required</p>
+            <h1>Feedback Portal is not configured yet.</h1>
+            <p className="panel-copy">
+              Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to the
+              deployment environment, then redeploy the application.
+            </p>
+          </section>
+        </main>
+        <footer className="app-footer">Feedback Portal</footer>
+      </div>
+    );
+  }
 
   const handleLogout = async () => {
     setAuthError('');

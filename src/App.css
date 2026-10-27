@@ -51,6 +51,8 @@ button { cursor: pointer; }
 .dashboard-intro h1 { font-size: clamp(2rem, 4vw, 3rem); }
 .dashboard-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 24px; align-items: start; }
 .panel { padding: 28px; }
+.setup-panel { max-width: 680px; margin: 40px auto; }
+.setup-panel h1 { margin: 10px 0 12px; color: #172033; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.08; letter-spacing: -.045em; }
 .section-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 8px; }
 .status-pill, .count-badge, .category-tag, .submission-status { display: inline-flex; align-items: center; border-radius: 999px; font-size: .72rem; font-weight: 750; }
 .status-pill { padding: 6px 10px; color: #14734e; background: #edfff7; }

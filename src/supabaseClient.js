@@ -6,10 +6,7 @@ const supabaseAnonKey =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("⚠️ Supabase URL या Anon Key गायब है! कृपया .env फ़ाइल चेक करें।");
-}
-
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+export const supabase = isSupabaseConfigured
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
