@@ -1,6 +1,16 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
+function getListError(error) {
+  if (error?.code === 'PGRST204' || error?.code === '42703') {
+    return 'The Supabase database is missing the latest feedback fields. Run the complete schema migration, then refresh this page.';
+  }
+  if (error?.code === '42501') {
+    return 'Your account is not authorized to read feedback. Please sign in again.';
+  }
+  return 'We could not load your submissions. Check your connection and try again.';
+}
+
 function formatDate(value) {
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: 'medium',
@@ -27,7 +37,7 @@ export default function FeedbackList({ userId, refreshToken }) {
 
       if (!active) return;
       if (error) {
-        setErrorMessage('We could not load your submissions. Check your connection and try again.');
+        setErrorMessage(getListError(error));
       } else {
         setFeedback(data || []);
       }

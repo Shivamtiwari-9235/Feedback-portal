@@ -19,10 +19,23 @@ explicitly promoted) manage submissions in a protected reviewer dashboard.
    The result must be `public.profiles`. If the result is `null`, rerun the
    complete schema migration and resolve any error shown by the SQL Editor
    before continuing.
-4. In Authentication > URL Configuration, add your local URL (for example
+5. Verify the feedback columns required by the current application:
+
+   ```sql
+   select column_name
+   from information_schema.columns
+   where table_schema = 'public'
+     and table_name = 'feedbacks'
+     and column_name in ('contact_preference', 'status')
+   order by column_name;
+   ```
+
+   The result must contain both columns. A missing column causes REST API
+   `400` errors when loading or submitting feedback.
+6. In Authentication > URL Configuration, add your local URL (for example
    `http://localhost:5173`) and your production URL.
-5. Copy `.env.example` to `.env` and set the project URL and publishable key.
-6. Install and start the application:
+7. Copy `.env.example` to `.env` and set the project URL and publishable key.
+8. Install and start the application:
 
    ```bash
    npm install

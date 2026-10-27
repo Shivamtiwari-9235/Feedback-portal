@@ -3,6 +3,19 @@ import { supabase } from '../supabaseClient';
 
 const initialForm = { category: 'General Feedback', message: '', contactPreference: '' };
 
+function getSubmissionError(error) {
+  if (error?.code === '23514') {
+    return 'This feedback does not match the database rules. Please use a valid category and a message between 10 and 2000 characters.';
+  }
+  if (error?.code === '42501') {
+    return 'Your account is not authorized to submit feedback. Please sign in again.';
+  }
+  if (error?.code === 'PGRST204' || error?.code === '42703') {
+    return 'The Supabase database is missing the latest feedback fields. Run the complete schema migration, then try again.';
+  }
+  return 'We could not submit your feedback. Check your connection and try again.';
+}
+
 export default function FeedbackForm({ userId, onSubmitted }) {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
@@ -45,8 +58,8 @@ export default function FeedbackForm({ userId, onSubmitted }) {
       setForm(initialForm);
       setSuccessMessage('Thank you! Your feedback was submitted successfully.');
       onSubmitted(data);
-    } catch {
-      setErrorMessage('We could not submit your feedback. Check your connection and try again.');
+    } catch (error) {
+      setErrorMessage(getSubmissionError(error));
     } finally {
       setLoading(false);
     }
