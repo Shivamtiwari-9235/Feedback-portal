@@ -1,90 +1,70 @@
 # Feedback Portal
 
-A secure React + Supabase feedback portal. Users can create an account, sign in,
-submit feedback, and see only their own previous submissions.
+A production-ready React/Vite feedback portal backed by Supabase. Users can
+create an account, submit feedback, review their own history, and (when
+explicitly promoted) manage submissions in a protected reviewer dashboard.
 
-## Run locally
+## Local setup
 
 1. Create a Supabase project.
-2. Open the Supabase SQL Editor and run [`supabase/schema.sql`](./supabase/schema.sql).
-3. Copy `.env.example` to `.env` and add the project URL and publishable key.
-4. Install and start the app:
+2. Run [`supabase/schema.sql`](./supabase/schema.sql) in the Supabase SQL Editor.
+3. In Authentication > URL Configuration, add your local URL (for example
+   `http://localhost:5173`) and your production URL.
+4. Copy `.env.example` to `.env` and set the project URL and publishable key.
+5. Install and start the application:
 
-```bash
-npm install
-npm run dev
-```
+   ```bash
+   npm install
+   npm run dev
+   ```
 
-The browser app uses only the Supabase publishable/anon key. Never put a
-service-role key in `.env`, browser code, screenshots, or source control.
+Only the Supabase publishable/anon key belongs in a browser build. Never use a
+service-role key in `.env`, source code, client-side requests, or deployments.
 
-## Build sequence implemented
+## Create the first reviewer
 
-1. React/Vite app shell with responsive header and hero.
-2. Supabase client with publishable-key and legacy anon-key compatibility.
-3. `public.feedbacks` table, constraints, index, and RLS policies.
-4. Sign-up and login with empty-input, password-length, duplicate-click, and
-   Supabase error handling.
-5. Authenticated feedback form with category/message validation and confirmation.
-6. User-scoped submission list with loading, error, and empty states.
-7. Logout and session restoration, including expired-session handling.
+1. Sign up for a normal account through the app and confirm the email if email
+   confirmation is enabled.
+2. In Supabase, open **Table Editor > profiles** and locate that user's UUID.
+3. Update only the `role` column to `reviewer`, or run this SQL with the user's
+   UUID:
 
-## RLS explanation
+   ```sql
+   update public.profiles
+   set role = 'reviewer', updated_at = now()
+   where id = 'USER_UUID_HERE';
+   ```
 
-`feedbacks.user_id` references `auth.users(id)`. Row Level Security is enabled.
-The select and delete policies allow an authenticated user to operate only on
-rows where `auth.uid() = user_id`. The insert policy requires the same
-relationship, so a client cannot submit on behalf of another account.
-There is intentionally no normal-user update policy. Database constraints also
-enforce valid categories, statuses, and message length even if someone bypasses
-the UI and calls the API directly. A reviewer dashboard must be added through
-a verified server-side role system (for example JWT claims or a protected
-server function), not a field editable by the user.
+4. Sign out and sign in again. The **Reviewer dashboard** navigation link will
+   appear. Opening `#/reviewer` directly is still protected by the database
+   policy and the application role check.
 
-### Schema diagram
+Do not expose the service-role key to reviewers or run role changes from the
+browser. Promote accounts only from the Supabase dashboard or a trusted
+server-side administrative workflow.
 
-```text
-auth.users
-    1
-    |
-    | user_id (foreign key, cascade delete)
-    *
-public.feedbacks
-    - id (uuid, primary key)
-    - title
-    - category
-    - message
-    - created_at / updated_at
-```
+## Security model
 
-## Security acceptance checklist
+- `profiles` is created automatically for every new auth user.
+- RLS blocks anonymous access and limits profile reads to the current user.
+- Feedback inserts require `auth.uid() = user_id`.
+- Regular users can read only their own rows; reviewers can read all rows.
+- Only reviewers can update `status`, and the database grants authenticated
+  clients update access to that column only.
+- No delete policy is provided, preventing client-side deletion of submissions.
+- Client errors are intentionally generic so database and authentication
+  internals are not exposed.
 
-- Empty email/password and empty/short/long feedback are rejected client-side.
-- Invalid login and Supabase/network errors are shown without silent fallback.
-- Submit and auth controls disable during requests to prevent duplicate clicks.
-- Session is restored on reload and removed on logout/expired auth events.
-- Every feedback read is filtered by the current user and independently
-  protected by RLS.
-- Insert/delete access is protected by RLS; cross-user reads/writes are denied.
-- Verify cross-user isolation with two Supabase accounts in separate browsers:
-  submit as A, sign in as B, and confirm A's rows are not returned.
-
-## Submission package
-
-- **Live URL:** deploy this Vite app to Vercel/Netlify and record the generated
-  URL here.
-- **Repository URL:** push this folder to the target Git repository and record
-  the URL here.
-- **Screenshots:** capture the sign-in, authenticated form, confirmation, and
-  populated history states after deployment. Do not include credentials.
-- **Schema diagram:** included above.
-- **Short demo:** sign up, sign in, submit feedback, refresh, sign out, then
-  sign in as a second user to demonstrate isolation.
-- **RLS explanation:** included above.
-
-## Validation commands
+## Validation
 
 ```bash
 npm run lint
 npm run build
 ```
+
+## GitHub deployment
+
+Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` as deployment
+environment variables in Vercel, Netlify, or GitHub Actions. `.env` is ignored
+by Git and must never be committed. Rotate any key immediately if a secret was
+ever committed or shared.

@@ -21,13 +21,13 @@ export default function FeedbackList({ userId, refreshToken }) {
       setErrorMessage('');
       const { data, error } = await supabase
         .from('feedbacks')
-        .select('id, category, message, created_at')
+        .select('id, category, message, contact_preference, status, created_at')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (!active) return;
       if (error) {
-        setErrorMessage(error.message || 'Unable to load your feedback.');
+        setErrorMessage('We could not load your submissions. Check your connection and try again.');
       } else {
         setFeedback(data || []);
       }
@@ -72,7 +72,7 @@ export default function FeedbackList({ userId, refreshToken }) {
                 <span>{formatDate(item.created_at)}</span>
               </div>
               <p>{item.message}</p>
-              <span className="submission-status">{item.status || 'Received'}</span>
+              <span className={`submission-status status-${item.status || 'pending'}`}>{(item.status || 'pending').replace('_', ' ')}</span>
             </article>
           ))}
         </div>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../supabaseClient';
 
-const initialForm = { category: 'General', message: '' };
+const initialForm = { category: 'General Feedback', message: '', contactPreference: '' };
 
 export default function FeedbackForm({ userId, onSubmitted }) {
   const [form, setForm] = useState(initialForm);
@@ -34,9 +34,9 @@ export default function FeedbackForm({ userId, onSubmitted }) {
         .from('feedbacks')
         .insert({
           user_id: userId,
-          title: form.category,
           category: form.category,
           message,
+          contact_preference: form.contactPreference.trim() || null,
         })
         .select()
         .single();
@@ -45,8 +45,8 @@ export default function FeedbackForm({ userId, onSubmitted }) {
       setForm(initialForm);
       setSuccessMessage('Thank you! Your feedback was submitted successfully.');
       onSubmitted(data);
-    } catch (error) {
-      setErrorMessage(error.message || 'Unable to submit feedback. Please try again.');
+    } catch {
+      setErrorMessage('We could not submit your feedback. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -74,11 +74,22 @@ export default function FeedbackForm({ userId, onSubmitted }) {
             onChange={(event) => setForm({ ...form, category: event.target.value })}
             disabled={loading}
           >
-            <option>General</option>
-            <option>Product</option>
-            <option>Support</option>
-            <option>Bug report</option>
+            <option>General Feedback</option>
+            <option>Bug Report</option>
+            <option>Feature Request</option>
           </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="contact-preference">Contact preference <span className="optional">(optional)</span></label>
+          <input
+            id="contact-preference"
+            type="text"
+            maxLength="320"
+            placeholder="Email or handle"
+            value={form.contactPreference}
+            onChange={(event) => setForm({ ...form, contactPreference: event.target.value })}
+            disabled={loading}
+          />
         </div>
         <div className="form-group">
           <label htmlFor="message">Your feedback</label>
