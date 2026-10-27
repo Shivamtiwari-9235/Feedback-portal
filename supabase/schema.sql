@@ -73,7 +73,8 @@ set category = case category
   when 'Product' then 'Feature Request'
   when 'Support' then 'General Feedback'
   else category
-end;
+end
+where category in ('Bug report', 'General', 'Product', 'Support');
 alter table public.feedbacks
   add constraint feedbacks_category_check
   check (category in ('Bug Report', 'Feature Request', 'General Feedback'));
