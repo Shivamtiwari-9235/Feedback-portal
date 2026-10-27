@@ -7,11 +7,22 @@ explicitly promoted) manage submissions in a protected reviewer dashboard.
 ## Local setup
 
 1. Create a Supabase project.
-2. Run [`supabase/schema.sql`](./supabase/schema.sql) in the Supabase SQL Editor.
-3. In Authentication > URL Configuration, add your local URL (for example
+2. Open the Supabase SQL Editor, paste the **entire** contents of
+   [`supabase/schema.sql`](./supabase/schema.sql), and click **Run**. Do not run
+   only the reviewer `update` statement below.
+3. Confirm that the query completes successfully, then verify the table exists:
+
+   ```sql
+   select to_regclass('public.profiles') as profiles_table;
+   ```
+
+   The result must be `public.profiles`. If the result is `null`, rerun the
+   complete schema migration and resolve any error shown by the SQL Editor
+   before continuing.
+4. In Authentication > URL Configuration, add your local URL (for example
    `http://localhost:5173`) and your production URL.
-4. Copy `.env.example` to `.env` and set the project URL and publishable key.
-5. Install and start the application:
+5. Copy `.env.example` to `.env` and set the project URL and publishable key.
+6. Install and start the application:
 
    ```bash
    npm install
@@ -25,9 +36,12 @@ service-role key in `.env`, source code, client-side requests, or deployments.
 
 1. Sign up for a normal account through the app and confirm the email if email
    confirmation is enabled.
-2. In Supabase, open **Table Editor > profiles** and locate that user's UUID.
-3. Update only the `role` column to `reviewer`, or run this SQL with the user's
-   UUID:
+2. Confirm that `public.profiles` exists by following the setup verification
+   above.
+3. In Supabase, open **Table Editor > profiles** and locate that user's UUID.
+4. Update only the `role` column to `reviewer`, or run the standalone script
+   [`supabase/promote-reviewer.sql`](./supabase/promote-reviewer.sql) after
+   replacing the placeholder UUID:
 
    ```sql
    update public.profiles
@@ -35,7 +49,7 @@ service-role key in `.env`, source code, client-side requests, or deployments.
    where id = 'USER_UUID_HERE';
    ```
 
-4. Sign out and sign in again. The **Reviewer dashboard** navigation link will
+5. Sign out and sign in again. The **Reviewer dashboard** navigation link will
    appear. Opening `#/reviewer` directly is still protected by the database
    policy and the application role check.
 
