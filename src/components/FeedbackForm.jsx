@@ -1,7 +1,26 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
 const initialForm = { category: 'General Feedback', message: '', contactPreference: '' };
+const maxMessageLength = 2000;
+
+function getSpeechRecognition() {
+  if (typeof window === 'undefined') return undefined;
+  return window.SpeechRecognition || window.webkitSpeechRecognition;
+}
+
+function getSpeechErrorMessage(error) {
+  const messages = {
+    'audio-capture': 'No microphone was found. Check your microphone and try again.',
+    'language-not-supported': 'Speech recognition is not available for this language.',
+    network: 'Speech recognition could not connect. Check your connection and try again.',
+    'not-allowed': 'Microphone access was denied. Allow microphone access and try again.',
+    'service-not-allowed': 'Speech recognition is not allowed by this browser.',
+    'no-speech': 'No speech was detected. Try speaking closer to your microphone.',
+  };
+
+  return messages[error] || 'Speech recognition stopped unexpectedly. Please try again.';
+}
 
 function getSubmissionError(error) {
   if (error?.code === '23514') {
@@ -21,6 +40,70 @@ export default function FeedbackForm({ userId, onSubmitted }) {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+  const speechSupported = Boolean(getSpeechRecognition());
+
+  useEffect(() => {
+    const SpeechRecognition = getSpeechRecognition();
+    if (!SpeechRecognition) {
+      return undefined;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = navigator.language || 'en-US';
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map((result) => result[0].transcript)
+        .join(' ')
+        .trim();
+
+      if (!transcript) return;
+
+      setForm((currentForm) => {
+        const separator = currentForm.message.trim() ? ' ' : '';
+        const message = `${currentForm.message}${separator}${transcript}`.slice(0, maxMessageLength);
+        return { ...currentForm, message };
+      });
+    };
+    recognition.onerror = (event) => {
+      setIsListening(false);
+      if (event.error === 'aborted') return;
+      setErrorMessage(getSpeechErrorMessage(event.error));
+    };
+    recognition.onend = () => setIsListening(false);
+    recognitionRef.current = recognition;
+
+    return () => {
+      recognition.abort();
+      recognitionRef.current = null;
+    };
+  }, []);
+
+  const handleSpeechToggle = () => {
+    if (!speechSupported) {
+      setErrorMessage('Speech recognition is not supported in this browser. You can type your feedback instead.');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      return;
+    }
+
+    setErrorMessage('');
+    try {
+      recognitionRef.current?.start();
+    } catch (error) {
+      if (error.name === 'InvalidStateError') return;
+      setIsListening(false);
+      setErrorMessage('Could not start speech recognition. Please try again.');
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -36,7 +119,7 @@ export default function FeedbackForm({ userId, onSubmitted }) {
       setErrorMessage('Feedback must be at least 10 characters long.');
       return;
     }
-    if (message.length > 2000) {
+    if (message.length > maxMessageLength) {
       setErrorMessage('Feedback must be 2000 characters or less.');
       return;
     }
@@ -55,6 +138,8 @@ export default function FeedbackForm({ userId, onSubmitted }) {
         .single();
 
       if (error) throw error;
+      recognitionRef.current?.abort();
+      setIsListening(false);
       setForm(initialForm);
       setSuccessMessage('Thank you! Your feedback was submitted successfully.');
       onSubmitted(data);
@@ -105,7 +190,20 @@ export default function FeedbackForm({ userId, onSubmitted }) {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="message">Your feedback</label>
+          <div className="feedback-label-row">
+            <label htmlFor="message">Your feedback</label>
+            <button
+              type="button"
+              className={`speech-button${isListening ? ' speech-button-listening' : ''}`}
+              onClick={handleSpeechToggle}
+              disabled={loading}
+              aria-pressed={isListening}
+              aria-label={isListening ? 'Stop listening' : 'Speak feedback'}
+            >
+              <span aria-hidden="true">🎙️</span>
+              {isListening ? 'Listening... Speak now' : 'Speak feedback'}
+            </button>
+          </div>
           <textarea
             id="message"
             rows="6"
@@ -115,7 +213,10 @@ export default function FeedbackForm({ userId, onSubmitted }) {
             onChange={(event) => setForm({ ...form, message: event.target.value })}
             disabled={loading}
           />
-          <span className="field-hint">{form.message.length}/2000 characters</span>
+          <span className="field-hint">
+            {form.message.length}/{maxMessageLength} characters
+            {!speechSupported && ' · Voice input is not supported in this browser'}
+          </span>
         </div>
         <button type="submit" className="btn btn-primary" disabled={loading}>
           {loading ? 'Submitting...' : 'Submit feedback'}
