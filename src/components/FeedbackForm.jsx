@@ -200,8 +200,13 @@ export default function FeedbackForm({ userId, onSubmitted }) {
               aria-pressed={isListening}
               aria-label={isListening ? 'Stop listening' : 'Speak feedback'}
             >
-              <span aria-hidden="true">🎙️</span>
-              {isListening ? 'Listening... Speak now' : 'Speak feedback'}
+              <svg className="speech-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3Z" />
+                <path d="M19 11a7 7 0 0 1-14 0M12 18v4M8 22h8" />
+              </svg>
+              <span className="speech-button-text">
+                {isListening ? 'Listening... Speak now' : 'Speak feedback'}
+              </span>
             </button>
           </div>
           <textarea

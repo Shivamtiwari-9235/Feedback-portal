@@ -8,7 +8,8 @@ use an external package, paid service, or API key.
 - [`src/components/FeedbackForm.jsx`](./src/components/FeedbackForm.jsx) checks
   for `window.SpeechRecognition` and
   `window.webkitSpeechRecognition`.
-- A **Speak feedback** button appears beside the **Your feedback** label.
+- A compact, WhatsApp-style green microphone button appears beside the **Your
+  feedback** label.
 - While recognition is active, the button changes to **Listening... Speak now**,
   uses a red pulsing style, and can be clicked again to stop listening.
 - Recognized text is appended to the existing textarea content and truncated at

@@ -33,8 +33,9 @@ button { cursor: pointer; }
 .form-group { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
 .form-group label { color: #3e4a60; font-size: .82rem; font-weight: 700; }
 .feedback-label-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.speech-button { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border: 1px solid #dfe4ec; border-radius: 999px; color: #3158d5; background: #f7f8fc; font-size: .75rem; font-weight: 750; transition: background .2s, border-color .2s, color .2s; }
-.speech-button:hover:not(:disabled) { border-color: #3158d5; background: #edf1ff; }
+.speech-button { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 6px 11px 6px 8px; border: 1px solid #d7eee3; border-radius: 999px; color: #168c5b; background: #effbf5; font-size: .75rem; font-weight: 750; transition: background .2s, border-color .2s, color .2s, transform .2s; }
+.speech-icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.speech-button:hover:not(:disabled) { border-color: #168c5b; background: #dff7e9; transform: translateY(-1px); }
 .speech-button-listening { color: #fff; border-color: #b13d4c; background: #c9374b; animation: speech-pulse 1.5s ease-in-out infinite; }
 .speech-button-listening:hover:not(:disabled) { border-color: #9f2d3e; background: #b83245; }
 .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px 13px; border: 1px solid #dfe4ec; border-radius: 9px; color: #172033; background: #fff; outline: none; transition: border-color .2s, box-shadow .2s; }
